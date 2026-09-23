@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -16,6 +15,7 @@ h1{font-size:1.3rem;font-weight:600;background:linear-gradient(135deg,var(--acce
 input[type=password],input[type=text],textarea,select{width:100%;padding:.8rem .9rem;border-radius:9px;border:1px solid var(--border);background:var(--panel2);color:var(--ink);font-family:inherit;font-size:.88rem}
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
 textarea{min-height:80px;resize:vertical;line-height:1.5}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%238a8a95' d='M0 0l5 6 5-6z'/></svg>");background-repeat:no-repeat;background-position:right .9rem center;background-size:10px;padding-right:2.2rem}
 .btn{padding:.8rem 1rem;border-radius:10px;border:none;font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;width:100%;transition:all .15s;margin-bottom:.5rem}
 .btn:active{transform:scale(.97)}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#8e7aff);color:#fff;font-size:.95rem;padding:1rem}
@@ -31,6 +31,19 @@ textarea{min-height:80px;resize:vertical;line-height:1.5}
 .image-card{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);aspect-ratio:9/16;background:#000}
 .image-card img{width:100%;height:100%;object-fit:cover;display:block}
 .remove-btn{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.75);color:#fff;border:none;width:24px;height:24px;border-radius:50%;font-size:12px;cursor:pointer}
+.format-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+.format-card{background:var(--panel2);border:2px solid var(--border);border-radius:10px;padding:.7rem .4rem;text-align:center;cursor:pointer;transition:all .15s}
+.format-card:active{transform:scale(.96)}
+.format-card.selected{border-color:var(--accent);background:rgba(108,92,231,.15)}
+.format-preview{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;margin-bottom:.3rem}
+.format-shape{background:var(--accent2);border-radius:2px;opacity:.7}
+.format-card.selected .format-shape{opacity:1}
+.format-916 .format-shape{width:30%;height:80%}
+.format-169 .format-shape{width:80%;height:45%}
+.format-11 .format-shape{width:60%;height:60%}
+.format-name{font-size:.7rem;font-weight:600;margin-bottom:.1rem}
+.format-desc{font-size:.6rem;color:var(--dim);line-height:1.2}
+.format-card.selected .format-name{color:var(--accent2)}
 .queue-item{display:flex;align-items:center;gap:.6rem;padding:.7rem;border-radius:9px;border:1px solid var(--border);margin-bottom:.4rem;background:var(--panel2);font-size:.82rem}
 .queue-item.done{border-color:var(--success)}
 .queue-item.failed{border-color:var(--error)}
@@ -39,7 +52,10 @@ textarea{min-height:80px;resize:vertical;line-height:1.5}
 .q-status{font-size:.7rem;color:var(--dim);text-align:right}
 .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem;margin-top:.5rem}
 .gallery-item{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#000}
-.gallery-item video{width:100%;display:block;aspect-ratio:9/16;object-fit:cover}
+.gallery-item video{width:100%;display:block;object-fit:cover}
+.gallery-item.portrait video{aspect-ratio:9/16}
+.gallery-item.landscape video{aspect-ratio:16/9}
+.gallery-item.square video{aspect-ratio:1/1}
 .status-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:.8rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.6rem;transform:translateY(100%);transition:transform .3s;z-index:100}
 .status-bar.visible{transform:translateY(0)}
 .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
@@ -50,8 +66,6 @@ textarea{min-height:80px;resize:vertical;line-height:1.5}
 .toast.error{border-color:var(--error)}
 .info{background:rgba(108,92,231,.1);border-left:3px solid var(--accent);padding:.7rem .9rem;border-radius:8px;font-size:.75rem;color:var(--accent2);margin-bottom:.8rem;line-height:1.5}
 .hidden{display:none!important}
-canvas.noSleep{position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1}
-video.noSleep{position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1}
 </style>
 </head>
 <body>
@@ -59,12 +73,33 @@ video.noSleep{position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;point
 <h1>Studio Créatif</h1>
 <p class="subtitle">Vos images en mouvement</p>
 
-<div class="info">💡 Ajoutez vos images, écrivez votre prompt, choisissez un style, et regardez la magie opérer.</div>
+<div class="info">💡 Ajoutez vos images, choisissez votre format, écrivez votre prompt, et regardez la magie opérer.</div>
 
 <div class="card">
   <div class="card-title">🔑 Clé API Agnes</div>
   <input type="password" id="api-key" placeholder="sk-...">
   <button class="btn btn-secondary" id="save-key" style="margin-top:.5rem">Enregistrer</button>
+</div>
+
+<div class="card">
+  <div class="card-title">📐 Format de sortie</div>
+  <div class="format-grid">
+    <div class="format-card format-916 selected" data-format="9:16">
+      <div class="format-preview"><div class="format-shape"></div></div>
+      <div class="format-name">9:16</div>
+      <div class="format-desc">TikTok<br>Reels<br>Shorts</div>
+    </div>
+    <div class="format-card format-169" data-format="16:9">
+      <div class="format-preview"><div class="format-shape"></div></div>
+      <div class="format-name">16:9</div>
+      <div class="format-desc">YouTube<br>Paysage<br>Cinéma</div>
+    </div>
+    <div class="format-card format-11" data-format="1:1">
+      <div class="format-preview"><div class="format-shape"></div></div>
+      <div class="format-name">1:1</div>
+      <div class="format-desc">Instagram<br>Facebook<br>Carré</div>
+    </div>
+  </div>
 </div>
 
 <div class="card">
@@ -125,8 +160,8 @@ video.noSleep{position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;point
 
 <div class="toast" id="toast"><span id="toast-text"></span></div>
 
-<canvas id="noSleepCanvas" class="noSleep" width="2" height="2"></canvas>
-<video id="noSleepVideo" class="noSleep" playsinline muted loop></video>
+<canvas id="noSleepCanvas" width="2" height="2" style="position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1"></canvas>
+<video id="noSleepVideo" playsinline muted loop style="position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1"></video>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -143,8 +178,30 @@ const S = {
   stopRequested: false,
   queue: [],
   completed: 0,
-  failed: 0
+  failed: 0,
+  format: '9:16'
 };
+
+// ═══════════════════════════════════════════════════════════
+// FORMAT
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.format-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    document.querySelectorAll('.format-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    S.format = card.dataset.format;
+    localStorage.setItem('studio_format', S.format);
+  });
+});
+// Restaurer le format sauvegardé
+const savedFormat = localStorage.getItem('studio_format');
+if(savedFormat){
+  S.format = savedFormat;
+  document.querySelectorAll('.format-card').forEach(c=>{
+    if(c.dataset.format === savedFormat) c.classList.add('selected');
+    else c.classList.remove('selected');
+  });
+}
 
 // ═══════════════════════════════════════════════════════════
 // TOAST / STATUS
@@ -230,7 +287,7 @@ function updateBtn(){
   if(S.isRunning){ btn.textContent = 'Génération… (' + (S.completed+S.failed) + '/' + S.queue.length + ')'; }
   else if(!hasKey){ btn.textContent = 'Ajoutez votre clé API'; }
   else if(!hasImg){ btn.textContent = 'Ajoutez des images'; }
-  else { btn.textContent = 'Créer ' + S.images.length + ' vidéo' + (S.images.length>1?'s':''); }
+  else { btn.textContent = 'Créer ' + S.images.length + ' vidéo' + (S.images.length>1?'s':'') + ' en ' + S.format; }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -337,11 +394,23 @@ function buildPrompt(){
     neon:'neon-soaked night, colorful reflections, magenta and cyan accents',
     vintage:'vintage Super 8 film, grainy texture, warm faded colors'
   };
+
+  // Choix du texte de format selon S.format
+  let formatText = '';
+  if(S.format === '9:16'){
+    formatText = 'Portrait orientation 9:16 vertical (TikTok, Instagram Reels, YouTube Shorts), 1080x1920, mobile-first composition, vertical framing';
+  } else if(S.format === '16:9'){
+    formatText = 'Landscape orientation 16:9 horizontal (YouTube, TV, cinema), 1920x1080, wide cinematic framing, horizontal composition';
+  } else if(S.format === '1:1'){
+    formatText = 'Square orientation 1:1 (Instagram feed, Facebook post), 1080x1080, centered composition, balanced framing';
+  }
+
   const parts = [
     'Animate this exact image as the starting frame. Preserve the exact subject, face, pose, clothing, and composition.',
+    formatText,
     effects[effectId]||'',
     userPrompt,
-    'Portrait 9:16, 24fps, no text, no watermark'
+    '24fps, no text, no watermark, no subtitles'
   ];
   return parts.filter(Boolean).join('. ');
 }
@@ -368,7 +437,7 @@ document.getElementById('generate-btn').addEventListener('click', async ()=>{
   try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){}
 
   const prompt = buildPrompt();
-  const delay = 75000; // 75s entre chaque
+  const delay = 75000;
 
   for(let i=0;i<S.queue.length;i++){
     if(S.stopRequested) break;
@@ -392,7 +461,6 @@ document.getElementById('generate-btn').addEventListener('click', async ()=>{
       renderQueue(); updateBtn();
     }
 
-    // Délai entre créations (sauf la dernière)
     if(i < S.queue.length-1 && !S.stopRequested){
       for(let r=Math.round(delay/1000); r>0; r--){
         if(S.stopRequested) break;
@@ -423,7 +491,11 @@ function addToGallery(url, num){
   const grid = document.getElementById('gallery-grid');
   card.style.display = 'block';
   const el = document.createElement('div');
-  el.className = 'gallery-item';
+  // Class selon le format pour afficher la bonne aspect-ratio
+  let fmtClass = 'portrait';
+  if(S.format === '16:9') fmtClass = 'landscape';
+  else if(S.format === '1:1') fmtClass = 'square';
+  el.className = 'gallery-item ' + fmtClass;
   el.innerHTML = `<video controls preload="metadata" playsinline><source src="${url}" type="video/mp4"></video>`;
   grid.appendChild(el);
 }

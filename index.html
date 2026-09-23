@@ -20,6 +20,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 .btn:active{transform:scale(.97)}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#8e7aff);color:#fff;font-size:.95rem;padding:1rem}
 .btn-secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--border)}
+.btn-download{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;font-size:.8rem;padding:.6rem;margin-top:.4rem;margin-bottom:0}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:2rem 1rem;text-align:center;cursor:pointer;background:var(--panel)}
 .upload-zone:active{border-color:var(--accent);background:var(--panel2)}
@@ -50,12 +51,17 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 .q-icon{font-size:1rem;width:1.4rem;text-align:center}
 .q-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .q-status{font-size:.7rem;color:var(--dim);text-align:right}
-.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem;margin-top:.5rem}
-.gallery-item{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#000}
-.gallery-item video{width:100%;display:block;object-fit:cover}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem;margin-top:.5rem}
+.gallery-item{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#000;display:flex;flex-direction:column}
+.gallery-item video{width:100%;display:block;object-fit:cover;background:#000}
 .gallery-item.portrait video{aspect-ratio:9/16}
 .gallery-item.landscape video{aspect-ratio:16/9}
 .gallery-item.square video{aspect-ratio:1/1}
+.gallery-footer{padding:.5rem;background:var(--panel2);display:flex;flex-direction:column;gap:.4rem}
+.gallery-label{font-size:.7rem;color:var(--dim);text-align:center}
+.download-btn{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;border:none;padding:.6rem;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:all .15s}
+.download-btn:active{transform:scale(.97)}
+.download-btn:disabled{opacity:.5}
 .status-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:.8rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.6rem;transform:translateY(100%);transition:transform .3s;z-index:100}
 .status-bar.visible{transform:translateY(0)}
 .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
@@ -73,7 +79,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 <h1>Studio Créatif</h1>
 <p class="subtitle">Vos images en mouvement</p>
 
-<div class="info">💡 Ajoutez vos images, choisissez votre format, écrivez votre prompt, et regardez la magie opérer.</div>
+<div class="info">💡 Ajoutez vos images, choisissez le format, écrivez votre prompt, et téléchargez vos vidéos.</div>
 
 <div class="card">
   <div class="card-title">🔑 Clé API Agnes</div>
@@ -191,9 +197,9 @@ document.querySelectorAll('.format-card').forEach(card=>{
     card.classList.add('selected');
     S.format = card.dataset.format;
     localStorage.setItem('studio_format', S.format);
+    updateBtn();
   });
 });
-// Restaurer le format sauvegardé
 const savedFormat = localStorage.getItem('studio_format');
 if(savedFormat){
   S.format = savedFormat;
@@ -395,7 +401,6 @@ function buildPrompt(){
     vintage:'vintage Super 8 film, grainy texture, warm faded colors'
   };
 
-  // Choix du texte de format selon S.format
   let formatText = '';
   if(S.format === '9:16'){
     formatText = 'Portrait orientation 9:16 vertical (TikTok, Instagram Reels, YouTube Shorts), 1080x1920, mobile-first composition, vertical framing';
@@ -433,7 +438,6 @@ document.getElementById('generate-btn').addEventListener('click', async ()=>{
   document.getElementById('gallery-card').style.display = 'none';
   renderQueue();
 
-  // Anti-veille
   try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){}
 
   const prompt = buildPrompt();
@@ -484,20 +488,73 @@ document.getElementById('stop-btn').addEventListener('click', ()=>{
 });
 
 // ═══════════════════════════════════════════════════════════
-// GALERIE
+// GALERIE + TÉLÉCHARGEMENT
 // ═══════════════════════════════════════════════════════════
 function addToGallery(url, num){
   const card = document.getElementById('gallery-card');
   const grid = document.getElementById('gallery-grid');
   card.style.display = 'block';
-  const el = document.createElement('div');
-  // Class selon le format pour afficher la bonne aspect-ratio
+
   let fmtClass = 'portrait';
   if(S.format === '16:9') fmtClass = 'landscape';
   else if(S.format === '1:1') fmtClass = 'square';
+
+  const el = document.createElement('div');
   el.className = 'gallery-item ' + fmtClass;
-  el.innerHTML = `<video controls preload="metadata" playsinline><source src="${url}" type="video/mp4"></video>`;
+  const fileLabel = `scene_${num}_${S.format.replace(':','x')}_${Date.now()}.mp4`;
+  el.innerHTML = `
+    <video controls preload="metadata" playsinline><source src="${url}" type="video/mp4"></video>
+    <div class="gallery-footer">
+      <div class="gallery-label">Vidéo ${num} · ${S.format}</div>
+      <button class="download-btn" data-url="${url}" data-name="${fileLabel}">📥 Télécharger</button>
+    </div>
+  `;
   grid.appendChild(el);
+
+  // Attacher l'événement téléchargement
+  const dlBtn = el.querySelector('.download-btn');
+  dlBtn.addEventListener('click', ()=> downloadVideo(url, fileLabel, dlBtn));
+}
+
+async function downloadVideo(url, filename, btn){
+  try{
+    btn.disabled = true;
+    btn.textContent = '⏳ Téléchargement…';
+    status('📥 Téléchargement en cours…');
+
+    // Récupérer la vidéo en blob
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const blob = await res.blob();
+
+    // Créer un lien de téléchargement
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Nettoyer
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 5000);
+
+    status(null);
+    btn.textContent = '✅ Téléchargée';
+    toast('Vidéo téléchargée dans Fichiers ✓','success');
+    setTimeout(()=>{
+      btn.disabled = false;
+      btn.textContent = '📥 Télécharger';
+    }, 2500);
+  }catch(e){
+    console.error(e);
+    status(null);
+    btn.disabled = false;
+    btn.textContent = '📥 Télécharger';
+    toast('Erreur : ouvre la vidéo puis appuie longuement','warn', 4000);
+    // Fallback : ouvrir la vidéo
+    window.open(url, '_blank');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════

@@ -1,1 +1,440 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Studio Créatif</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0a0f;--panel:#16161d;--panel2:#1e1e28;--border:#2a2a35;--ink:#f0f0f5;--dim:#8a8a95;--accent:#6c5ce7;--accent2:#a29bfe;--success:#00b894;--error:#e74c3c;--warn:#fdcb6e}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:1rem .8rem 6rem;font-size:15px;line-height:1.5;max-width:700px;margin:0 auto}
+h1{font-size:1.3rem;font-weight:600;background:linear-gradient(135deg,var(--accent2),#74b9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem;text-align:center}
+.subtitle{font-size:.75rem;color:var(--dim);text-align:center;margin-bottom:1rem}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.8rem}
+.card-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:.7rem}
+input[type=password],input[type=text],textarea,select{width:100%;padding:.8rem .9rem;border-radius:9px;border:1px solid var(--border);background:var(--panel2);color:var(--ink);font-family:inherit;font-size:.88rem}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
+textarea{min-height:80px;resize:vertical;line-height:1.5}
+.btn{padding:.8rem 1rem;border-radius:10px;border:none;font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;width:100%;transition:all .15s;margin-bottom:.5rem}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#8e7aff);color:#fff;font-size:.95rem;padding:1rem}
+.btn-secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--border)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.upload-zone{border:2px dashed var(--border);border-radius:14px;padding:2rem 1rem;text-align:center;cursor:pointer;background:var(--panel)}
+.upload-zone:active{border-color:var(--accent);background:var(--panel2)}
+.upload-zone input{display:none}
+.upload-icon{font-size:2.5rem;margin-bottom:.5rem;opacity:.6}
+.upload-text{font-size:.95rem;margin-bottom:.2rem}
+.upload-hint{font-size:.72rem;color:var(--dim)}
+.images-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:.4rem;margin-top:.8rem}
+.image-card{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);aspect-ratio:9/16;background:#000}
+.image-card img{width:100%;height:100%;object-fit:cover;display:block}
+.remove-btn{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.75);color:#fff;border:none;width:24px;height:24px;border-radius:50%;font-size:12px;cursor:pointer}
+.queue-item{display:flex;align-items:center;gap:.6rem;padding:.7rem;border-radius:9px;border:1px solid var(--border);margin-bottom:.4rem;background:var(--panel2);font-size:.82rem}
+.queue-item.done{border-color:var(--success)}
+.queue-item.failed{border-color:var(--error)}
+.q-icon{font-size:1rem;width:1.4rem;text-align:center}
+.q-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-status{font-size:.7rem;color:var(--dim);text-align:right}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem;margin-top:.5rem}
+.gallery-item{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#000}
+.gallery-item video{width:100%;display:block;aspect-ratio:9/16;object-fit:cover}
+.status-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:.8rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.6rem;transform:translateY(100%);transition:transform .3s;z-index:100}
+.status-bar.visible{transform:translateY(0)}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-120px);background:var(--panel);border:1px solid var(--border);padding:.8rem 1.2rem;border-radius:10px;font-size:.85rem;z-index:1000;opacity:0;transition:all .35s;max-width:90vw}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-color:var(--success)}
+.toast.error{border-color:var(--error)}
+.info{background:rgba(108,92,231,.1);border-left:3px solid var(--accent);padding:.7rem .9rem;border-radius:8px;font-size:.75rem;color:var(--accent2);margin-bottom:.8rem;line-height:1.5}
+.hidden{display:none!important}
+canvas.noSleep{position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1}
+video.noSleep{position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1}
+</style>
+</head>
+<body>
+
+<h1>Studio Créatif</h1>
+<p class="subtitle">Vos images en mouvement</p>
+
+<div class="info">💡 Ajoutez vos images, écrivez votre prompt, choisissez un style, et regardez la magie opérer.</div>
+
+<div class="card">
+  <div class="card-title">🔑 Clé API Agnes</div>
+  <input type="password" id="api-key" placeholder="sk-...">
+  <button class="btn btn-secondary" id="save-key" style="margin-top:.5rem">Enregistrer</button>
+</div>
+
+<div class="card">
+  <div class="card-title">📸 Vos images</div>
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept="image/*" multiple>
+    <div class="upload-icon">＋</div>
+    <div class="upload-text">Ajouter des images</div>
+    <div class="upload-hint">Autant que vous voulez — chacune deviendra une vidéo</div>
+  </div>
+  <div class="images-grid" id="images-grid"></div>
+</div>
+
+<div class="card">
+  <div class="card-title">✍️ Votre vision</div>
+  <textarea id="main-prompt" placeholder="Décrivez ce que vous voulez : animation douce, vent léger, lumière chaude..."></textarea>
+</div>
+
+<div class="card">
+  <div class="card-title">🎨 Effet</div>
+  <select id="effect-select">
+    <option value="">— Aucun —</option>
+    <option value="cinematic">🎬 Cinématique</option>
+    <option value="golden">🌅 Golden Hour</option>
+    <option value="bw">⚫ Noir & Blanc</option>
+    <option value="anime">🌸 Anime</option>
+    <option value="neon">🌆 Néon Urbain</option>
+    <option value="vintage">📽️ Vintage Super 8</option>
+  </select>
+</div>
+
+<div class="card">
+  <div class="card-title">📷 Durée</div>
+  <select id="duration-select">
+    <option value="121">5 secondes</option>
+    <option value="153" selected>6,4 secondes</option>
+    <option value="241">10 secondes</option>
+  </select>
+</div>
+
+<button class="btn btn-primary" id="generate-btn" disabled>Créer les vidéos</button>
+<button class="btn btn-secondary" id="stop-btn" style="display:none;color:var(--error)">⏹ Arrêter</button>
+
+<div class="card" id="queue-card" style="display:none">
+  <div class="card-title">File d'attente</div>
+  <div id="queue-list"></div>
+</div>
+
+<div class="card" id="gallery-card" style="display:none">
+  <div class="card-title">🎬 Vidéos générées</div>
+  <div class="gallery-grid" id="gallery-grid"></div>
+</div>
+
+<div class="status-bar" id="status-bar">
+  <div class="spinner"></div>
+  <span id="status-text">Prêt</span>
+</div>
+
+<div class="toast" id="toast"><span id="toast-text"></span></div>
+
+<canvas id="noSleepCanvas" class="noSleep" width="2" height="2"></canvas>
+<video id="noSleepVideo" class="noSleep" playsinline muted loop></video>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
+const MODEL = 'agnes-video-v2.0';
+const FPS = 24;
+
+const S = {
+  images: [],
+  isRunning: false,
+  stopRequested: false,
+  queue: [],
+  completed: 0,
+  failed: 0
+};
+
+// ═══════════════════════════════════════════════════════════
+// TOAST / STATUS
+// ═══════════════════════════════════════════════════════════
+let toastT;
+function toast(msg, type='success', dur=2500){
+  const t = document.getElementById('toast');
+  const tx = document.getElementById('toast-text');
+  t.className = 'toast';
+  void t.offsetWidth;
+  t.classList.add(type);
+  tx.textContent = msg;
+  requestAnimationFrame(()=>t.classList.add('visible'));
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>t.classList.remove('visible'), dur);
+}
+function status(msg){
+  const b = document.getElementById('status-bar');
+  const t = document.getElementById('status-text');
+  if(msg){ b.classList.add('visible'); t.textContent = msg; }
+  else b.classList.remove('visible');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CLÉ API
+// ═══════════════════════════════════════════════════════════
+function getKey(){ return (localStorage.getItem('agnes_key')||'').trim(); }
+document.getElementById('save-key').addEventListener('click',()=>{
+  const k = document.getElementById('api-key').value.trim();
+  if(!k){ localStorage.removeItem('agnes_key'); toast('Clé supprimée','warn'); }
+  else { localStorage.setItem('agnes_key', k); toast('Clé enregistrée ✓'); }
+  updateBtn();
+});
+document.getElementById('api-key').value = getKey();
+
+// ═══════════════════════════════════════════════════════════
+// IMAGES
+// ═══════════════════════════════════════════════════════════
+document.getElementById('upload-zone').addEventListener('click',()=>{
+  document.getElementById('file-input').click();
+});
+document.getElementById('file-input').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files).filter(f=>f.type.startsWith('image/'));
+  for(const f of files){
+    if(f.size > 12*1024*1024) continue;
+    const uri = await fileToDataUri(f);
+    S.images.push({id:'i'+Date.now()+Math.random(), uri});
+  }
+  renderImages();
+  updateBtn();
+});
+
+function fileToDataUri(f){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = e=>res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(f);
+  });
+}
+
+function renderImages(){
+  const g = document.getElementById('images-grid');
+  g.innerHTML = S.images.map(img=>`
+    <div class="image-card">
+      <img src="${img.uri}">
+      <button class="remove-btn" data-del="${img.id}">✕</button>
+    </div>
+  `).join('');
+  g.querySelectorAll('[data-del]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      S.images = S.images.filter(i=>i.id!==b.dataset.del);
+      renderImages(); updateBtn();
+    });
+  });
+}
+
+function updateBtn(){
+  const btn = document.getElementById('generate-btn');
+  const hasImg = S.images.length > 0;
+  const hasKey = !!getKey();
+  btn.disabled = !hasImg || !hasKey || S.isRunning;
+  if(S.isRunning){ btn.textContent = 'Génération… (' + (S.completed+S.failed) + '/' + S.queue.length + ')'; }
+  else if(!hasKey){ btn.textContent = 'Ajoutez votre clé API'; }
+  else if(!hasImg){ btn.textContent = 'Ajoutez des images'; }
+  else { btn.textContent = 'Créer ' + S.images.length + ' vidéo' + (S.images.length>1?'s':''); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUEUE
+// ═══════════════════════════════════════════════════════════
+function renderQueue(){
+  const card = document.getElementById('queue-card');
+  const list = document.getElementById('queue-list');
+  if(!S.queue.length){ card.style.display='none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = S.queue.map(q=>{
+    let icon='○', txt='En attente', cls='';
+    if(q.status==='creating'){icon='◐';txt='Préparation…'}
+    else if(q.status==='processing'){icon='◐';txt=q.progress||'En cours…'}
+    else if(q.status==='done'){icon='●';txt='Terminé';cls='done'}
+    else if(q.status==='failed'){icon='✕';txt='Échec';cls='failed'}
+    return `<div class="queue-item ${cls}">
+      <div class="q-icon">${icon}</div>
+      <div class="q-name">Image ${q.idx+1}</div>
+      <div class="q-status">${txt}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// API AGNES
+// ═══════════════════════════════════════════════════════════
+async function apiFetch(url, opts={}, label='API'){
+  for(let a=0;a<6;a++){
+    if(S.stopRequested) throw new Error('Arrêt demandé');
+    try{
+      const res = await fetch(url, opts);
+      if(res.status===429){
+        const wait=[15,30,45,60,90,120][Math.min(a,5)];
+        status(`⏳ Limite API — attente ${wait}s…`);
+        await sleep(wait*1000); continue;
+      }
+      if(res.status===503){
+        const wait=[5,10,15,20,30][Math.min(a,4)];
+        status(`⏳ Serveur occupé — ${wait}s…`);
+        await sleep(wait*1000); continue;
+      }
+      return res;
+    }catch(e){
+      if(e.message==='Arrêt demandé') throw e;
+      const wait=[3,5,8,12,20][Math.min(a,4)];
+      status(`⏳ Réseau — retry ${wait}s…`);
+      await sleep(wait*1000);
+    }
+  }
+  return fetch(url, opts);
+}
+
+async function createVideo(imageUri, prompt){
+  const body = {
+    model: MODEL,
+    prompt,
+    image: imageUri,
+    num_frames: +document.getElementById('duration-select').value,
+    frame_rate: FPS
+  };
+  const res = await apiFetch(API_BASE+'/videos',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+getKey(),'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  },'Create');
+  if(!res.ok){
+    const err = await res.text();
+    throw new Error('HTTP '+res.status+' — '+err.slice(0,150));
+  }
+  const d = await res.json();
+  const id = d.video_id || d.id || d.task_id;
+  if(!id) throw new Error('Pas d\'ID retourné');
+  return id;
+}
+
+async function pollVideo(videoId, onProgress){
+  for(let a=0;a<150;a++){
+    if(S.stopRequested) throw new Error('Arrêt demandé');
+    if(a>0) await sleep(8000);
+    const url = POLL_BASE+'?video_id='+encodeURIComponent(videoId)+'&model_name='+encodeURIComponent(MODEL);
+    const res = await apiFetch(url,{headers:{'Authorization':'Bearer '+getKey()}},'Poll');
+    const d = await res.json();
+    const st = d.status||'unknown';
+    onProgress((d.progress||0)+'% — '+st);
+    if(['completed','succeeded','done'].includes(st)){
+      const u = (d.metadata&&d.metadata.url)||d.url||(d.output&&d.output.url);
+      if(!u) throw new Error('Terminé mais pas d\'URL');
+      return u;
+    }
+    if(['failed','error','cancelled'].includes(st)) throw new Error('Échec ('+st+')');
+  }
+  throw new Error('Timeout');
+}
+
+function buildPrompt(){
+  const userPrompt = document.getElementById('main-prompt').value.trim();
+  const effectId = document.getElementById('effect-select').value;
+  const effects = {
+    cinematic:'cinematic film look, dramatic lighting, film grain, shallow depth of field',
+    golden:'golden hour warm sunlight, soft amber glow, long shadows',
+    bw:'elegant black and white, high contrast monochrome',
+    anime:'anime style, Studio Ghibli aesthetic, hand-painted backgrounds',
+    neon:'neon-soaked night, colorful reflections, magenta and cyan accents',
+    vintage:'vintage Super 8 film, grainy texture, warm faded colors'
+  };
+  const parts = [
+    'Animate this exact image as the starting frame. Preserve the exact subject, face, pose, clothing, and composition.',
+    effects[effectId]||'',
+    userPrompt,
+    'Portrait 9:16, 24fps, no text, no watermark'
+  ];
+  return parts.filter(Boolean).join('. ');
+}
+
+// ═══════════════════════════════════════════════════════════
+// GÉNÉRATION
+// ═══════════════════════════════════════════════════════════
+document.getElementById('generate-btn').addEventListener('click', async ()=>{
+  if(!getKey()){ toast('Ajoutez votre clé API','error'); return; }
+  if(!S.images.length){ toast('Ajoutez des images','error'); return; }
+
+  S.isRunning = true; S.stopRequested = false;
+  S.completed = 0; S.failed = 0;
+  S.queue = S.images.map((img,i)=>({
+    idx:i, image:img.uri, status:'pending', progress:null, videoUrl:null
+  }));
+  document.getElementById('generate-btn').disabled = true;
+  document.getElementById('stop-btn').style.display = 'block';
+  document.getElementById('gallery-grid').innerHTML = '';
+  document.getElementById('gallery-card').style.display = 'none';
+  renderQueue();
+
+  // Anti-veille
+  try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){}
+
+  const prompt = buildPrompt();
+  const delay = 75000; // 75s entre chaque
+
+  for(let i=0;i<S.queue.length;i++){
+    if(S.stopRequested) break;
+    const item = S.queue[i];
+    try{
+      item.status = 'creating'; renderQueue();
+      const vid = await createVideo(item.image, prompt);
+      item.status = 'processing'; renderQueue();
+      const url = await pollVideo(vid, p=>{ item.progress=p; renderQueue(); });
+      item.videoUrl = url;
+      item.status = 'done';
+      S.completed++;
+      renderQueue(); updateBtn();
+      addToGallery(url, i+1);
+      toast(`Image ${i+1} prête !`);
+    }catch(e){
+      if(e.message==='Arrêt demandé'){ item.status='failed'; item.progress='Arrêté'; break; }
+      console.error(e);
+      item.status = 'failed'; item.progress = 'Échec';
+      S.failed++;
+      renderQueue(); updateBtn();
+    }
+
+    // Délai entre créations (sauf la dernière)
+    if(i < S.queue.length-1 && !S.stopRequested){
+      for(let r=Math.round(delay/1000); r>0; r--){
+        if(S.stopRequested) break;
+        status(`⏳ Prochaine dans ${r}s…`);
+        await sleep(1000);
+      }
+    }
+  }
+
+  S.isRunning = false; S.stopRequested = false;
+  document.getElementById('generate-btn').disabled = false;
+  document.getElementById('stop-btn').style.display = 'none';
+  status(null);
+  toast(`${S.completed}/${S.queue.length} vidéos créées`, S.completed>0?'success':'error');
+  updateBtn();
+});
+
+document.getElementById('stop-btn').addEventListener('click', ()=>{
+  S.stopRequested = true;
+  status('Arrêt en cours…');
+});
+
+// ═══════════════════════════════════════════════════════════
+// GALERIE
+// ═══════════════════════════════════════════════════════════
+function addToGallery(url, num){
+  const card = document.getElementById('gallery-card');
+  const grid = document.getElementById('gallery-grid');
+  card.style.display = 'block';
+  const el = document.createElement('div');
+  el.className = 'gallery-item';
+  el.innerHTML = `<video controls preload="metadata" playsinline><source src="${url}" type="video/mp4"></video>`;
+  grid.appendChild(el);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// Init
+updateBtn();
+</script>
+</body>
+</html>

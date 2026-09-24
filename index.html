@@ -6,12 +6,13 @@
 <title>Studio Créatif</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#0a0a0f;--panel:#16161d;--panel2:#1e1e28;--border:#2a2a35;--ink:#f0f0f5;--dim:#8a8a95;--accent:#6c5ce7;--accent2:#a29bfe;--success:#00b894;--error:#e74c3c;--warn:#fdcb6e}
+:root{--bg:#0a0a0f;--panel:#16161d;--panel2:#1e1e28;--border:#2a2a35;--ink:#f0f0f5;--dim:#8a8a95;--accent:#6c5ce7;--accent2:#a29bfe;--success:#00b894;--error:#e74c3c;--warn:#fdcb6e;--info:#74b9ff}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:1rem .8rem 6rem;font-size:15px;line-height:1.5;max-width:700px;margin:0 auto}
-h1{font-size:1.3rem;font-weight:600;background:linear-gradient(135deg,var(--accent2),#74b9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem;text-align:center}
+h1{font-size:1.3rem;font-weight:600;background:linear-gradient(135deg,var(--accent2),var(--info));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem;text-align:center}
 .subtitle{font-size:.75rem;color:var(--dim);text-align:center;margin-bottom:1rem}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.8rem}
-.card-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:.7rem}
+.card-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:.7rem;display:flex;justify-content:space-between;align-items:center}
+.card-title .badge{background:var(--accent);color:#fff;padding:.15rem .5rem;border-radius:8px;font-size:.65rem;letter-spacing:0;font-weight:600}
 input[type=password],input[type=text],textarea,select{width:100%;padding:.8rem .9rem;border-radius:9px;border:1px solid var(--border);background:var(--panel2);color:var(--ink);font-family:inherit;font-size:.88rem}
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
 textarea{min-height:80px;resize:vertical;line-height:1.5}
@@ -20,7 +21,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 .btn:active{transform:scale(.97)}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#8e7aff);color:#fff;font-size:.95rem;padding:1rem}
 .btn-secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--border)}
-.btn-download{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;font-size:.8rem;padding:.6rem;margin-top:.4rem;margin-bottom:0}
+.btn-download{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;font-size:.85rem;padding:.7rem;margin-bottom:0}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:2rem 1rem;text-align:center;cursor:pointer;background:var(--panel)}
 .upload-zone:active{border-color:var(--accent);background:var(--panel2)}
@@ -59,9 +60,10 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 .gallery-item.square video{aspect-ratio:1/1}
 .gallery-footer{padding:.5rem;background:var(--panel2);display:flex;flex-direction:column;gap:.4rem}
 .gallery-label{font-size:.7rem;color:var(--dim);text-align:center}
-.download-btn{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;border:none;padding:.6rem;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:all .15s}
+.download-btn{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;border:none;padding:.6rem;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:all .15s;text-decoration:none;text-align:center;display:block}
 .download-btn:active{transform:scale(.97)}
-.download-btn:disabled{opacity:.5}
+.audio-preview{background:var(--panel2);border-radius:9px;padding:.6rem;margin-top:.6rem}
+.audio-preview audio{width:100%;height:36px;margin-bottom:.5rem}
 .status-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:.8rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.6rem;transform:translateY(100%);transition:transform .3s;z-index:100}
 .status-bar.visible{transform:translateY(0)}
 .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
@@ -79,7 +81,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 <h1>Studio Créatif</h1>
 <p class="subtitle">Vos images en mouvement</p>
 
-<div class="info">💡 Ajoutez vos images, choisissez le format, écrivez votre prompt, et téléchargez vos vidéos.</div>
+<div class="info">💡 Ajoutez vos images, choisissez le format, écrivez votre prompt, et créez vos vidéos.</div>
 
 <div class="card">
   <div class="card-title">🔑 Clé API Agnes</div>
@@ -125,6 +127,23 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 </div>
 
 <div class="card">
+  <div class="card-title">🎙️ Narration (voix off) <span class="badge">NOUVEAU</span></div>
+  <textarea id="narration-text" placeholder="Écris le texte à lire par la voix off. Ex : Il était une fois un petit lapin qui découvrait le monde..."></textarea>
+  <select id="voice-select" style="margin-top:.5rem">
+    <option value="fr">🇫🇷 Français</option>
+    <option value="en">🇬🇧 Anglais</option>
+    <option value="es">🇪🇸 Espagnol</option>
+    <option value="de">🇩🇪 Allemand</option>
+    <option value="it">🇮🇹 Italien</option>
+    <option value="pt">🇵🇹 Portugais</option>
+    <option value="ja">🇯🇵 Japonais</option>
+    <option value="zh-CN">🇨🇳 Chinois</option>
+  </select>
+  <button class="btn btn-secondary" id="tts-generate-btn" style="margin-top:.5rem">🎙️ Générer la voix</button>
+  <div id="tts-result" style="margin-top:.5rem"></div>
+</div>
+
+<div class="card">
   <div class="card-title">🎨 Effet</div>
   <select id="effect-select">
     <option value="">— Aucun —</option>
@@ -166,9 +185,6 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 
 <div class="toast" id="toast"><span id="toast-text"></span></div>
 
-<canvas id="noSleepCanvas" width="2" height="2" style="position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1"></canvas>
-<video id="noSleepVideo" playsinline muted loop style="position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1"></video>
-
 <script>
 // ═══════════════════════════════════════════════════════════
 // CONFIG
@@ -177,6 +193,7 @@ const API_BASE = 'https://apihub.agnes-ai.com/v1';
 const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
 const MODEL = 'agnes-video-v2.0';
 const FPS = 24;
+const TTS_SERVER = window.location.origin;
 
 const S = {
   images: [],
@@ -400,7 +417,6 @@ function buildPrompt(){
     neon:'neon-soaked night, colorful reflections, magenta and cyan accents',
     vintage:'vintage Super 8 film, grainy texture, warm faded colors'
   };
-
   let formatText = '';
   if(S.format === '9:16'){
     formatText = 'Portrait orientation 9:16 vertical (TikTok, Instagram Reels, YouTube Shorts), 1080x1920, mobile-first composition, vertical framing';
@@ -409,7 +425,6 @@ function buildPrompt(){
   } else if(S.format === '1:1'){
     formatText = 'Square orientation 1:1 (Instagram feed, Facebook post), 1080x1080, centered composition, balanced framing';
   }
-
   const parts = [
     'Animate this exact image as the starting frame. Preserve the exact subject, face, pose, clothing, and composition.',
     formatText,
@@ -464,7 +479,6 @@ document.getElementById('generate-btn').addEventListener('click', async ()=>{
       S.failed++;
       renderQueue(); updateBtn();
     }
-
     if(i < S.queue.length-1 && !S.stopRequested){
       for(let r=Math.round(delay/1000); r>0; r--){
         if(S.stopRequested) break;
@@ -488,81 +502,80 @@ document.getElementById('stop-btn').addEventListener('click', ()=>{
 });
 
 // ═══════════════════════════════════════════════════════════
-// GALERIE + TÉLÉCHARGEMENT
+// GALERIE
 // ═══════════════════════════════════════════════════════════
 function addToGallery(url, num){
   const card = document.getElementById('gallery-card');
   const grid = document.getElementById('gallery-grid');
   card.style.display = 'block';
-
   let fmtClass = 'portrait';
   if(S.format === '16:9') fmtClass = 'landscape';
   else if(S.format === '1:1') fmtClass = 'square';
-
   const el = document.createElement('div');
   el.className = 'gallery-item ' + fmtClass;
-  const fileLabel = `scene_${num}_${S.format.replace(':','x')}_${Date.now()}.mp4`;
   el.innerHTML = `
     <video controls preload="metadata" playsinline><source src="${url}" type="video/mp4"></video>
     <div class="gallery-footer">
       <div class="gallery-label">Vidéo ${num} · ${S.format}</div>
-      <button class="download-btn" data-url="${url}" data-name="${fileLabel}">📥 Télécharger</button>
+      <a class="download-btn" href="${url}" download="video_${num}_${S.format.replace(':','x')}.mp4" target="_blank">📥 Télécharger</a>
     </div>
   `;
   grid.appendChild(el);
-
-  // Attacher l'événement téléchargement
-  const dlBtn = el.querySelector('.download-btn');
-  dlBtn.addEventListener('click', ()=> downloadVideo(url, fileLabel, dlBtn));
 }
 
-async function downloadVideo(url, filename, btn){
+// ═══════════════════════════════════════════════════════════
+// TTS — Google TTS
+// ═══════════════════════════════════════════════════════════
+document.getElementById('tts-generate-btn').addEventListener('click', async ()=>{
+  const text = document.getElementById('narration-text').value.trim();
+  const voice = document.getElementById('voice-select').value;
+  if(!text){ toast('Écris d\'abord un texte','error'); return; }
+
+  const btn = document.getElementById('tts-generate-btn');
+  const result = document.getElementById('tts-result');
+  btn.disabled = true;
+  btn.textContent = '🎙️ Génération…';
+  status('🎙️ Génération de la voix…');
+
   try{
-    btn.disabled = true;
-    btn.textContent = '⏳ Téléchargement…';
-    status('📥 Téléchargement en cours…');
-
-    // Récupérer la vidéo en blob
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const blob = await res.blob();
-
-    // Créer un lien de téléchargement
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    // Nettoyer
-    setTimeout(()=>URL.revokeObjectURL(blobUrl), 5000);
-
+    const res = await fetch(TTS_SERVER + '/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: text,
+        voice: voice,
+        id: 'voice_' + Date.now()
+      })
+    });
+    if(!res.ok){
+      const err = await res.json();
+      throw new Error(err.error || 'HTTP ' + res.status);
+    }
+    const data = await res.json();
+    const audioUrl = TTS_SERVER + data.mp3;
+    result.innerHTML = `
+      <div class="audio-preview">
+        <audio controls src="${audioUrl}"></audio>
+        <a class="btn btn-download" href="${audioUrl}" download="narration_${Date.now()}.mp3">📥 Télécharger le MP3</a>
+      </div>
+    `;
+    toast('Voix générée ✓');
     status(null);
-    btn.textContent = '✅ Téléchargée';
-    toast('Vidéo téléchargée dans Fichiers ✓','success');
-    setTimeout(()=>{
-      btn.disabled = false;
-      btn.textContent = '📥 Télécharger';
-    }, 2500);
   }catch(e){
     console.error(e);
     status(null);
+    toast('Erreur : ' + e.message, 'error', 5000);
+  }finally{
     btn.disabled = false;
-    btn.textContent = '📥 Télécharger';
-    toast('Erreur : ouvre la vidéo puis appuie longuement','warn', 4000);
-    // Fallback : ouvrir la vidéo
-    window.open(url, '_blank');
+    btn.textContent = '🎙️ Générer la voix';
   }
-}
+});
 
 // ═══════════════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════════════
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
-// Init
 updateBtn();
 </script>
 </body>

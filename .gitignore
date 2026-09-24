@@ -1,0 +1,39 @@
+# Dépendances
+node_modules/
+package-lock.json
+yarn.lock
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Fichiers temporaires
+temp/audio/*
+temp/video/*
+temp/uploads/*
+temp/output/*
+!temp/audio/.gitkeep
+!temp/video/.gitkeep
+!temp/uploads/.gitkeep
+!temp/output/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Sauvegardes
+*.backup
+*.save
+*.bak
+
+# Tests
+test-*.js

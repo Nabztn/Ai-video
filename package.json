@@ -1,18 +1,14 @@
 {
   "name": "ai-video-studio",
   "version": "1.0.0",
-  "description": "Studio créatif IA avec TTS Edge",
-  "main": "server.js",
   "type": "module",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "cors": "^2.8.5",
-    "edge-tts": "^1.0.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "edge-tts": "^1.0.3"
   }
 }

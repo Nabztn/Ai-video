@@ -22,7 +22,8 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 .btn-primary{background:linear-gradient(135deg,var(--accent),#8e7aff);color:#fff;font-size:.95rem;padding:1rem}
 .btn-secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--border)}
 .btn-download{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;font-size:.85rem;padding:.7rem;margin-bottom:0;text-decoration:none;text-align:center;display:block}
-.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-merge{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;font-size:.8rem;padding:.6rem;border-radius:8px;font-weight:600;cursor:pointer;width:100%;font-family:inherit;margin-top:.3rem;border:none}
+.btn:disabled,.btn-merge:disabled{opacity:.35;cursor:not-allowed}
 .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:2rem 1rem;text-align:center;cursor:pointer;background:var(--panel)}
 .upload-zone:active{border-color:var(--accent);background:var(--panel2)}
 .upload-zone input{display:none}
@@ -62,6 +63,9 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 .gallery-label{font-size:.7rem;color:var(--dim);text-align:center}
 .download-btn{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;border:none;padding:.6rem;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:all .15s;text-decoration:none;text-align:center;display:block}
 .download-btn:active{transform:scale(.97)}
+.merge-btn{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;padding:.6rem;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:all .15s}
+.merge-btn:active{transform:scale(.97)}
+.merge-btn:disabled{opacity:.5;cursor:not-allowed}
 .audio-preview{background:var(--panel2);border-radius:9px;padding:.6rem;margin-top:.6rem}
 .audio-preview audio{width:100%;height:36px;margin-bottom:.5rem}
 .status-bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:.8rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.6rem;transform:translateY(100%);transition:transform .3s;z-index:100}
@@ -81,7 +85,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 <h1>Studio Créatif</h1>
 <p class="subtitle">Vos images en mouvement</p>
 
-<div class="info">💡 Ajoutez vos images, choisissez le format, écrivez votre prompt, et créez vos vidéos.</div>
+<div class="info">💡 Ajoutez vos images, choisissez le format, écrivez votre prompt, et créez vos vidéos. Puis fusionnez avec la narration.</div>
 
 <div class="card">
   <div class="card-title">🔑 Clé API Agnes</div>
@@ -197,7 +201,8 @@ const S = {
   queue: [],
   completed: 0,
   failed: 0,
-  format: '9:16'
+  format: '9:16',
+  lastAudioPath: null
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -497,7 +502,7 @@ document.getElementById('stop-btn').addEventListener('click', ()=>{
 });
 
 // ═══════════════════════════════════════════════════════════
-// GALERIE
+// GALERIE + FUSION
 // ═══════════════════════════════════════════════════════════
 function addToGallery(url, num){
   const card = document.getElementById('gallery-card');
@@ -512,10 +517,72 @@ function addToGallery(url, num){
     <video controls preload="metadata" playsinline><source src="${url}" type="video/mp4"></video>
     <div class="gallery-footer">
       <div class="gallery-label">Vidéo ${num} · ${S.format}</div>
-      <a class="download-btn" href="${url}" download="video_${num}_${S.format.replace(':','x')}.mp4" target="_blank">📥 Télécharger</a>
+      <a class="download-btn" href="${url}" download="video_${num}_${S.format.replace(':','x')}.mp4" target="_blank">📥 Vidéo seule</a>
+      <button class="merge-btn" data-url="${url}" data-num="${num}">🔊 Fusionner avec narration</button>
     </div>
   `;
   grid.appendChild(el);
+
+  const mergeBtn = el.querySelector('.merge-btn');
+  mergeBtn.addEventListener('click', ()=> mergeWithNarration(url, num, mergeBtn));
+}
+
+async function mergeWithNarration(videoUrl, num, btn){
+  if(!S.lastAudioPath){
+    toast('Génère d\'abord une narration','error', 4000);
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Fusion en cours…';
+  status('🔊 Fusion vidéo + narration…');
+
+  try{
+    const res = await fetch(TTS_SERVER + '/api/merge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        videoUrl: videoUrl,
+        audioPath: S.lastAudioPath,
+        outputName: 'video_' + num + '_' + Date.now()
+      })
+    });
+
+    if(!res.ok){
+      const err = await res.json();
+      throw new Error(err.error || 'HTTP ' + res.status);
+    }
+
+    const data = await res.json();
+    const mergedUrl = TTS_SERVER + data.url;
+
+    status(null);
+    toast('Vidéo fusionnée ✓', 'success');
+
+    // Ajouter la vidéo fusionnée en haut de la galerie
+    const grid = document.getElementById('gallery-grid');
+    const el = document.createElement('div');
+    el.className = 'gallery-item portrait';
+    el.innerHTML = `
+      <video controls preload="metadata" playsinline><source src="${mergedUrl}" type="video/mp4"></video>
+      <div class="gallery-footer">
+        <div class="gallery-label">🎬 Vidéo ${num} + narration</div>
+        <a class="download-btn" href="${mergedUrl}" download="video_${num}_avec_voix.mp4" target="_blank">📥 Télécharger (avec son)</a>
+      </div>
+    `;
+    grid.insertBefore(el, grid.firstChild);
+
+    btn.disabled = false;
+    btn.textContent = '✅ Fusionné';
+    setTimeout(()=>{ btn.textContent = '🔊 Fusionner avec narration'; }, 3000);
+
+  }catch(e){
+    console.error(e);
+    status(null);
+    toast('Erreur : ' + e.message, 'error', 5000);
+    btn.disabled = false;
+    btn.textContent = '🔊 Fusionner avec narration';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -548,6 +615,7 @@ document.getElementById('tts-generate-btn').addEventListener('click', async ()=>
     }
     const data = await res.json();
     const audioUrl = TTS_SERVER + data.mp3;
+    S.lastAudioPath = data.path;
     result.innerHTML = `
       <div class="audio-preview">
         <audio controls src="${audioUrl}"></audio>

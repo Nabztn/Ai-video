@@ -21,7 +21,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 .btn:active{transform:scale(.97)}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#8e7aff);color:#fff;font-size:.95rem;padding:1rem}
 .btn-secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--border)}
-.btn-download{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;font-size:.85rem;padding:.7rem;margin-bottom:0}
+.btn-download{background:linear-gradient(135deg,var(--success),#00d4a8);color:#fff;font-size:.85rem;padding:.7rem;margin-bottom:0;text-decoration:none;text-align:center;display:block}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:2rem 1rem;text-align:center;cursor:pointer;background:var(--panel)}
 .upload-zone:active{border-color:var(--accent);background:var(--panel2)}
@@ -127,17 +127,12 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 </div>
 
 <div class="card">
-  <div class="card-title">🎙️ Narration (voix off) <span class="badge">NOUVEAU</span></div>
+  <div class="card-title">🎙️ Narration (voix off) <span class="badge">ELEVENLABS</span></div>
   <textarea id="narration-text" placeholder="Écris le texte à lire par la voix off. Ex : Il était une fois un petit lapin qui découvrait le monde..."></textarea>
   <select id="voice-select" style="margin-top:.5rem">
-    <option value="fr">🇫🇷 Français</option>
-    <option value="en">🇬🇧 Anglais</option>
-    <option value="es">🇪🇸 Espagnol</option>
-    <option value="de">🇩🇪 Allemand</option>
-    <option value="it">🇮🇹 Italien</option>
-    <option value="pt">🇵🇹 Portugais</option>
-    <option value="ja">🇯🇵 Japonais</option>
-    <option value="zh-CN">🇨🇳 Chinois</option>
+    <option value="EXAVITQu4vr4xnSDxMaL">🎙️ Bella (femme, douce)</option>
+    <option value="pNInz6obpgDQGcFmaJgB">🎙️ Adam (homme, posé)</option>
+    <option value="ErXwobaYiN019PkySvjV">🎙️ Antoni (homme, grave)</option>
   </select>
   <button class="btn btn-secondary" id="tts-generate-btn" style="margin-top:.5rem">🎙️ Générer la voix</button>
   <div id="tts-result" style="margin-top:.5rem"></div>
@@ -524,7 +519,7 @@ function addToGallery(url, num){
 }
 
 // ═══════════════════════════════════════════════════════════
-// TTS — Google TTS
+// TTS — ElevenLabs
 // ═══════════════════════════════════════════════════════════
 document.getElementById('tts-generate-btn').addEventListener('click', async ()=>{
   const text = document.getElementById('narration-text').value.trim();

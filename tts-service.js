@@ -1,4 +1,4 @@
-// tts-service.js — Google Translate TTS
+// tts-service.js — ElevenLabs TTS
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -8,50 +8,59 @@ export async function ensureAudioDir() {
   await fs.mkdir(AUDIO_DIR, { recursive: true });
 }
 
-export async function generateSpeech(text, voice = 'fr', id = null) {
+export async function generateSpeech(text, voice = 'EXAVITQu4vr4xnSDxMaL', id = null) {
   const fileId = id || `tts_${Date.now()}`;
   const mp3Path = path.join(AUDIO_DIR, `${fileId}.mp3`);
 
   await ensureAudioDir();
 
-  // Découper le texte en morceaux de 200 caractères max (limite Google TTS)
-  const chunks = splitText(text, 190);
-
-  const audioBuffers = [];
-
-  for (const chunk of chunks) {
-    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${voice}&client=tw-ob`;
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-    if (!response.ok) {
-      throw new Error('HTTP ' + response.status + ' — Échec TTS Google');
-    }
-    const arrayBuffer = await response.arrayBuffer();
-    audioBuffers.push(Buffer.from(arrayBuffer));
+  const apiKey = (process.env.ELEVENLABS_API_KEY || '').trim();
+  if (!apiKey) {
+    throw new Error('ELEVENLABS_API_KEY manquante dans .env');
   }
 
-  const buffer = Buffer.concat(audioBuffers);
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': apiKey,
+      'Content-Type': 'application/json',
+      'Accept': 'audio/mpeg'
+    },
+    body: JSON.stringify({
+      text: text,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.0,
+        use_speaker_boost: true
+      }
+    })
+  });
+
+  if (!response.ok) {
+    let errMsg = 'HTTP ' + response.status;
+    try {
+      const errJson = await response.json();
+      if (errJson.detail && errJson.detail.message) {
+        errMsg += ' — ' + errJson.detail.message;
+      }
+    } catch (e) {
+      errMsg += ' — ' + (await response.text()).slice(0, 200);
+    }
+    throw new Error(errMsg);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  if (buffer.length === 0) {
+    throw new Error('Aucun audio reçu');
+  }
+
   await fs.writeFile(mp3Path, buffer);
 
   return { mp3: `/temp/audio/${fileId}.mp3`, path: mp3Path };
-}
-
-function splitText(text, maxLen) {
-  // Découpe le texte en phrases, puis regroupe les phrases par 190 caractères
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-  const chunks = [];
-  let current = '';
-  for (const s of sentences) {
-    if ((current + s).length > maxLen) {
-      if (current) chunks.push(current.trim());
-      current = s;
-    } else {
-      current += s;
-    }
-  }
-  if (current) chunks.push(current.trim());
-  return chunks.length ? chunks : [text.slice(0, maxLen)];
 }
